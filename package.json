@@ -1,0 +1,33 @@
+{
+  "name": "lerna-chart",
+  "version": "1.0.2",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha",
+    "prepublish": "test"
+  },
+  "bin": {
+    "lerna-chart": "./bin.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/afonsof/lerna-chart.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/afonsof/lerna-chart/issues"
+  },
+  "homepage": "https://github.com/afonsof/lerna-chart#readme",
+  "dependencies": {
+    "@lerna/package-graph": "^3.18.5",
+    "@lerna/project": "^3.18.0",
+    "node-plantuml": "^0.9.0"
+  },
+  "devDependencies": {
+    "chai": "^4.2.0",
+    "mocha": "^7.1.1"
+  }
+}

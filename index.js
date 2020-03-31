@@ -1,30 +1,43 @@
-const data = require('./chart.json');
+const Project = require('@lerna/project');
+const PackageGraph = require('@lerna/package-graph');
+const plantuml = require('node-plantuml');
 
-const nodes = [];
-const axis = [];
+const generateImageBufferFromLerna = async (lernaPath) => {
+    const project = new Project(lernaPath);
+    const packages = await project.getPackages();
+    const graph = new PackageGraph(packages);
 
-Object.keys(data).forEach(key=> {
-    if (!nodes.includes(key)) {
-        nodes.push(key);
-    }
-});
-
-Object.entries(data).forEach(([key, values])=>{
-    values.forEach(value => {
-        if(!nodes.includes(value)){
-            return;
-            nodes.push(value);
-        }
-        axis.push([nodes.indexOf(key) + 1, nodes.indexOf(value) + 1])
+    const chartText = [];
+    const packNames = [];
+    graph.forEach(pack => {
+        packNames.push(pack.name.replace(/-/g, '_'));
+        pack.localDependencies.forEach(dep=>{
+            chartText.push(`${pack.name.replace(/-/g, '_')} --> ${dep.name.replace(/-/g, '_')}`);
+        })
     });
-});
+    const uml = `@startuml
+    skinparam linetype ortho
+    skinparam monochrome true
+    skinparam shadowing false
+    skinparam nodeFontSize 15
+    ${packNames.map(pack=>`node ${pack}`).join('\n')}
+    ${chartText.join(`\n`)}
+    @enduml`.replace(/@gupy\//g, '');
 
-const nodesStr = nodes.map((cur, index)=>{
-    return `${index+1} ${cur}\n`
-}).join('\n');
+    let gen = plantuml.generate(uml);
+    let buffers = [];
 
-const axisStr = axis.map((cur)=>{
-    return `${cur[0]} ${cur[1]}\n`
-}).join('\n');
+    return new Promise((resolve)=> {
+        gen.out.on("data", data => {
+            buffers.push(data);
+        });
+        gen.out.on("close", () => {
+            resolve(Buffer.concat(buffers));
+        });
+    });
+};
 
-console.log(`${nodesStr}#\n${axisStr}`);
+
+module.exports = {
+    generateImageBufferFromLerna,
+};
