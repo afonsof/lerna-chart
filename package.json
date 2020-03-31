@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "mocha",
-    "prepublish": "test"
+    "prepare": "npm test"
   },
   "bin": {
     "lerna-chart": "./bin.js"
