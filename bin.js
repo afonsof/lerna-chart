@@ -41,4 +41,5 @@ const args = parser.parseArgs();
   const buffer = await generateGraphBufferLernaPath(args.inputDir, args.type);
   await fs.writeFileSync(args.outFile, buffer);
   console.log(`Chart saved at ${args.outFile}`);
+  process.exit(0)
 })();

@@ -12,7 +12,7 @@ function generatePlantUml(graph) {
         })
     });
     return [
-      '@startuml',
+        '@startuml',
         'skinparam linetype ortho',
         'skinparam monochrome true',
         'skinparam shadowing false',
@@ -30,15 +30,11 @@ async function getGraphFromLernaPath(lernaPath) {
 }
 
 function createPngBufferFromPlantUml(uml) {
-    let gen = plantuml.generate(uml);
-    let buffers = [];
-
-    return new Promise((resolve) => {
-        gen.out.on("data", data => {
-            buffers.push(data);
-        });
-        gen.out.on("close", () => {
-            resolve(Buffer.concat(buffers));
+    plantuml.useNailgun();
+    return new Promise((resolve, reject) => {
+        plantuml.generate(uml, {}, function (err, buffer) {
+            if (!buffer.length) reject(new Error('Buffer length is zero. Verify java if java is installed.'))
+            else resolve(buffer);
         });
     });
 }
@@ -49,26 +45,26 @@ function createTgfBufferFromGraph(graph) {
     graph.forEach(pack => {
         nodes.push(pack.name);
     });
-    graph.forEach(pack=>{
+    graph.forEach(pack => {
         pack.localDependencies.forEach(dep => {
             edges.push(`${nodes.indexOf(pack.name)} ${nodes.indexOf(dep.name)}`);
         });
     });
     const str = nodes
-      .map((node,index)=>`${index} ${node}`)
-      .join('\n') + '\n#\n' + edges.join('\n');
+        .map((node, index) => `${index} ${node}`)
+        .join('\n') + '\n#\n' + edges.join('\n');
     return Buffer.from(str, 'utf-8');
 }
 
-const generateGraphBufferLernaPath = async (lernaPath, format='png') => {
+const generateGraphBufferLernaPath = async (lernaPath, format = 'png') => {
     const graph = await getGraphFromLernaPath(lernaPath);
 
-    if(format==='png') {
+    if (format === 'png') {
         const uml = generatePlantUml(graph);
         return createPngBufferFromPlantUml(uml);
-    } else if (format==='tgf') {
+    } else if (format === 'tgf') {
         return createTgfBufferFromGraph(graph);
-    } else if(format === 'puml') {
+    } else if (format === 'puml') {
         return Buffer.from(generatePlantUml(graph), 'utf-8');
     }
 };
